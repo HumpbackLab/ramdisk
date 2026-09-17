@@ -3,7 +3,11 @@ ${CVI_SHOPTS}
 
 case "$1" in
   start)
-    insmod /mnt/system/ko/dwc2.ko
+    # dwc2.ko imports symbols exported by roles.ko when USB_ROLE_SWITCH=m.
+    if [ -f /mnt/system/ko/roles.ko ] && [ ! -d /sys/module/roles ]; then
+      insmod /mnt/system/ko/roles.ko || exit 1
+    fi
+    insmod /mnt/system/ko/dwc2.ko || exit 1
     echo device > /proc/cviusb/otg_role
     printf "Starting rndis: "
     /etc/run_usb.sh probe rndis
